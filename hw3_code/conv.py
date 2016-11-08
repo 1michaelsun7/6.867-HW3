@@ -40,7 +40,7 @@ class ArtistConvNet:
 		num_training_steps = 1501
 
 		# Add max pooling
-		pooling = False
+		pooling = True
 		layer1_pool_filter_size = 2
 		layer1_pool_stride = 2
 		layer2_pool_filter_size = 2
