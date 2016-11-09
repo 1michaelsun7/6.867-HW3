@@ -69,7 +69,6 @@ def build_nn(inp_size, num_classes, inp_layers, inp_dims):
 	# Create an output layer
 	output_layer = nn.FCLayer(num_classes, network[inp_layers], activation_fn = softmax)
 	network[inp_layers + 1] = output_layer
-	print network
 
 	return network
 
@@ -103,7 +102,6 @@ def backprop(network, train_set, val_set, test_set, max_iters = 10000):
 			output_value = network[num_layers - 1].get_values()
 
 			# How much were we off?
-			#y_error = cross_entropy(output_value, opt_y) #cross-entropy error
 			y_deriv = output_value - opt_y #cross-entropy derivative
 
 			# backprop each of the weights
@@ -115,9 +113,6 @@ def backprop(network, train_set, val_set, test_set, max_iters = 10000):
 				derivatives = prev_layer.get_activation()(prev_layer.get_input_values(), deriv=True)
 
 				cur_layer.set_biases(cur_layer.get_biases() - LEARNING_RATE*y_deriv)
-
-				#y_deriv = np.dot(cur_layer.get_activation()(cur_weights, deriv=True), y_deriv)
-				#y_deriv = np.dot(np.multiply(cur_weights, derivatives),y_deriv)
 
 				cur_layer.set_weights(cur_weights - LEARNING_RATE*np.dot(np.atleast_2d(inp_values).T, np.atleast_2d(y_deriv)))
 
@@ -170,8 +165,7 @@ def eval_network(net, data):
 		output_value = network[num_layers - 1].get_values()
 		if abs(sum(output_value) - 1) > 1e-7:
 			print sum(output_value)
-		# y_error = -1.0*np.log(1e-16 + output_value[int(cur_y)])
-		# total_ce += y_error
+
 		y_error = cross_entropy(output_value, opt_y) #cross-entropy error
 		total_ce += y_error
 		classification = np.argmax(output_value)
@@ -212,15 +206,15 @@ def plot_network(net, data):
 
 	print "Accuracy: ", accuracy/float(len(X_data))
 
-	# for k in xrange(num_classes):
-	# 	xs = [thing[0] for thing in classifications[k]]
-	# 	ys = [thing[1] for thing in classifications[k]]
+	for k in xrange(num_classes):
+		xs = [thing[0] for thing in classifications[k]]
+		ys = [thing[1] for thing in classifications[k]]
 
-	# 	color = colors[k]
+		color = colors[k]
 
-	# 	plt.plot(xs, ys, color + 'o')
+		plt.plot(xs, ys, color + 'o')
 
-	# plt.show()
+	plt.show()
 
 def load_from_txt(name):
 	# load data from csv files
@@ -229,21 +223,18 @@ def load_from_txt(name):
 	trainY = train[:,2:3]
 	trainY[trainY < 0] = 0
 	train_data = (trainX, np.squeeze(trainY))
-	#train_data = data
 
 	validate = np.loadtxt('data/data'+name+'_validate.csv', dtype=np.float64)
 	valX = validate[:,0:2]
 	valY = validate[:,2:3]
 	valY[valY < 0] = 0
 	val_data = (valX, np.squeeze(valY))
-	#val_data = data
 
 	test = np.loadtxt('data/data'+name+'_test.csv', dtype=np.float64)
 	testX = test[:,0:2]
 	testY = test[:,2:3]
 	testY[testY < 0] = 0
 	test_data = (testX, np.squeeze(testY))
-	#test_data = data
 
 	return train_data, val_data, test_data
 
@@ -276,17 +267,17 @@ def load_mnist():
 
 if __name__ == '__main__':
 	args = parser.parse_args()
-	#data = parse_csv(args.data)
+	data = parse_csv(args.data)
 	# parameters
-	#train_data, val_data, test_data = load_from_txt('4')
-	train_data, val_data, test_data = load_mnist()
+	#train_data, val_data, test_data = load_from_txt('1')
+	#train_data, val_data, test_data = load_mnist()
 
 	num_layers = args.layers
 	dim_list = args.dimensions
 	num_classes = args.classes
 
-	X_dim = len(train_data[0][0])
+	X_dim = len(data[0][0])
 
 	network = build_nn(X_dim, num_classes, num_layers, dim_list)
 	print "Beginning training..."
-	network = backprop(network, train_data, val_data, test_data, max_iters = 1000)
+	network = backprop(network, data, data, data, max_iters = 1000)
